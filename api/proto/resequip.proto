@@ -1,0 +1,333 @@
+syntax = "proto3";
+
+package resequip;
+
+import "protoc-gen-swagger/options/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "protobuf/ptypes/wrappers/wrappers.proto";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+		title: "ResEquip"
+        version: "1.0.0"
+    }
+    base_path: "/api"
+};
+
+service IncidentService {
+
+    rpc CreateMaintenanceIncident (MaintenanceIncidentCreate) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/incident/maintenance"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "create incident"
+            summary: "create incident"
+            tags: "Incident"
+        };
+    }
+    rpc ListIncidents (IncidentFilter) returns (IncidentList) {
+        option (google.api.http) = {
+            get: "/incidents"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "list incidents"
+            summary: "list incidents"
+            tags: "Incident"
+        };
+    }
+    rpc AssignIncident (AssignmentRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            patch: "/incident/{incident_id}/assignment"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "assign incident to person"
+            summary: "assign incident to person"
+            tags: "Incident"
+        };
+    }
+    rpc ChangeIncidentStatus (IncidentStatusRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            patch: "/incident/{incident_id}/status"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "change incident status"
+            summary: "change incident status"
+            tags: "Incident"
+        };
+    }
+    rpc CommentOnIncident (IncidentCommentRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            patch: "/incident/{incident_id}/comment"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "comment on incident"
+            summary: "comment on incident"
+            tags: "Incident"
+        };
+    }
+
+    rpc CreateEquipmentIncident (EquipmentIncidentCreate) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/incident/equipment"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "Create event"
+            summary: "create new event"
+            tags: "Equipment"
+        };
+    }
+    rpc ListEquipment (EquipmentFilter) returns (EquipmentList) {
+        option (google.api.http) = {
+            get: "/equipment"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "Create event"
+            summary: "create new event"
+            tags: "Equipment"
+        };
+    }
+    rpc ListEquipmentForPerson (EquipmentFilter) returns (AssignedEquipmentList) {
+        option (google.api.http) = {
+            get: "/equipment/person"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "Create event"
+            summary: "create new event"
+            tags: "Equipment"
+        };
+    }
+    rpc ApproveEquipmentIncident (IncidentApprovalRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            get: "/incident/equipment/approval"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "Create event"
+            summary: "create new event"
+            tags: "Equipment"
+        };
+    }
+
+    rpc GetPerson (Id) returns (Person) {
+        option (google.api.http) = {
+            get: "/person/{id}"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "get self"
+            summary: "get self "
+            tags: "Person"
+        };
+    }
+    rpc WhoAmI (google.protobuf.Empty) returns (Person) {
+        option (google.api.http) = {
+            get: "/i"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "get self"
+            summary: "get self "
+            tags: "Person"
+        };
+    }
+
+    //////////////////////////////// Chat ////////////////////////////////
+
+    rpc GetChatToken (Id) returns (ChatToken) {
+        option (google.api.http) = {
+            get: "/chat/token"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "get temporary chat token"
+            summary: "get temporary chat token"
+            tags: "Chat"
+        };
+    }
+    rpc GetChatHistory (Id) returns (ChatHistory) {
+        option (google.api.http) = {
+            get: "/chat/history"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "get temporary chat token"
+            summary: "get temporary chat token"
+            tags: "Chat"
+        };
+    }
+}
+
+message Id {
+    string id = 1;
+}
+
+message TimestampSelector {
+    google.protobuf.Timestamp lower_bound = 1;
+    google.protobuf.Timestamp upper_bound = 2;
+}
+
+enum SortOrder {
+    none_order = 0;
+    asc = 1;
+    desc = 2;
+}
+
+message Pagination {
+    uint64 limit = 1;
+    uint64 offset = 2;
+    string sort_by = 3;
+    SortOrder order = 4;
+    uint64 total_hits = 5;
+}
+
+message ChatToken {
+    string token = 1;
+}
+
+message Message {
+    string id = 1;
+    string uid = 2;
+    string login = 3;
+    string full_name = 4;
+    int64 time = 5;
+    string message = 6;
+    string event_id = 7;
+}
+
+message ChatHistory {
+    repeated Message messages = 1;
+}
+
+enum Role {
+    none_role = 0;
+    employee = 1;
+    team_leader = 2;
+    support = 3;
+}
+
+message Person{
+    string id = 1;
+    string login = 2;
+    string email = 4;
+    string full_name = 5;
+    Role role = 6;
+    string manager_id = 7;
+}
+
+enum IncidentPriority {
+    none_priority = 0;
+    high = 1;
+    medium = 2;
+    low = 3;
+}
+
+message MaintenanceIncidentCreate {
+     google.protobuf.StringValue description = 1;
+     google.protobuf.Timestamp deadline = 2;
+     IncidentPriority priority = 3;
+     google.protobuf.StringValue comment = 4;
+}
+
+message EquipmentIncidentCreate {
+    MaintenanceIncidentCreate incident = 1;
+    string equipment_id = 2;
+    int64 duration = 3;
+}
+
+enum IncidentStatus {
+    none_status = 0;
+    created = 1;
+    assigned = 2;
+    resolved = 3;
+    dismissed = 4;
+}
+
+enum IncidentType {
+    none_type = 0;
+    maintenance = 1;
+    equipment = 2;
+}
+
+message EquipmentIncident {
+    Equipment equipment = 1;
+    google.protobuf.Timestamp deadline = 2;
+}
+
+message Incident {
+    string id = 1;
+    int64 ordinal = 2;
+    string description = 3;
+    IncidentPriority priority = 4;
+    google.protobuf.Timestamp deadline = 5;
+    string comment = 6;
+    IncidentStatus status = 7;
+    IncidentType type = 8;
+    google.protobuf.Timestamp created_at = 9;
+    google.protobuf.Timestamp resolved_at = 10;
+    Person assignee = 11;
+    Person creator = 12;
+    EquipmentIncident equipment_incident = 13;
+}
+
+message IncidentList {
+    repeated Incident incidents = 1;
+}
+
+message IncidentFilter {
+    google.protobuf.Int64Value ordinal = 1;
+    google.protobuf.StringValue search = 2;
+    google.protobuf.StringValue assignee_id = 3;
+    google.protobuf.StringValue creator_id = 4;
+    IncidentStatus status = 5;
+    IncidentType type = 6;
+    TimestampSelector deadline = 7;
+    TimestampSelector created_at = 8;
+}
+
+message Equipment {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    int64 price = 4;
+}
+
+message AssignedEquipment {
+    Equipment equipment = 1;
+    google.protobuf.Timestamp created_at = 2;
+    google.protobuf.Timestamp deadline = 3;
+    string person_id = 4;
+}
+
+message EquipmentList {
+    repeated Equipment equipment = 1;
+}
+
+message AssignedEquipmentList {
+    repeated AssignedEquipment equipment = 1;
+}
+
+message EquipmentFilter {
+    google.protobuf.StringValue search = 2;
+}
+
+message AssignmentRequest {
+    string incident_id = 1;
+    string person_id = 2;
+}
+
+message IncidentStatusRequest {
+    string incident_id = 1;
+    IncidentStatus status = 2;
+}
+
+message IncidentCommentRequest {
+    string incident_id = 1;
+    google.protobuf.StringValue comment = 2;
+}
+
+message IncidentApprovalRequest {
+    string incident_id = 1;
+}

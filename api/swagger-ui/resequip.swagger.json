@@ -1,0 +1,771 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ResEquip",
+    "version": "1.0.0"
+  },
+  "basePath": "/api",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/chat/history": {
+      "get": {
+        "summary": "get temporary chat token",
+        "description": "get temporary chat token",
+        "operationId": "GetChatHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/resequipChatHistory"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/chat/token": {
+      "get": {
+        "summary": "get temporary chat token",
+        "description": "get temporary chat token",
+        "operationId": "GetChatToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/resequipChatToken"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
+    "/equipment": {
+      "get": {
+        "summary": "create new event",
+        "description": "Create event",
+        "operationId": "ListEquipment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/resequipEquipmentList"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Equipment"
+        ]
+      }
+    },
+    "/equipment/person": {
+      "get": {
+        "summary": "create new event",
+        "description": "Create event",
+        "operationId": "ListEquipmentForPerson",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/resequipAssignedEquipmentList"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Equipment"
+        ]
+      }
+    },
+    "/i": {
+      "get": {
+        "summary": "get self ",
+        "description": "get self",
+        "operationId": "WhoAmI",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/resequipPerson"
+            }
+          }
+        },
+        "tags": [
+          "Person"
+        ]
+      }
+    },
+    "/incident/equipment": {
+      "post": {
+        "summary": "create new event",
+        "description": "Create event",
+        "operationId": "CreateEquipmentIncident",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/resequipEquipmentIncidentCreate"
+            }
+          }
+        ],
+        "tags": [
+          "Equipment"
+        ]
+      }
+    },
+    "/incident/equipment/approval": {
+      "get": {
+        "summary": "create new event",
+        "description": "Create event",
+        "operationId": "ApproveEquipmentIncident",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Equipment"
+        ]
+      }
+    },
+    "/incident/maintenance": {
+      "post": {
+        "summary": "create incident",
+        "description": "create incident",
+        "operationId": "CreateMaintenanceIncident",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/resequipMaintenanceIncidentCreate"
+            }
+          }
+        ],
+        "tags": [
+          "Incident"
+        ]
+      }
+    },
+    "/incident/{incident_id}/assignment": {
+      "patch": {
+        "summary": "assign incident to person",
+        "description": "assign incident to person",
+        "operationId": "AssignIncident",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/resequipAssignmentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Incident"
+        ]
+      }
+    },
+    "/incident/{incident_id}/comment": {
+      "patch": {
+        "summary": "comment on incident",
+        "description": "comment on incident",
+        "operationId": "CommentOnIncident",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/resequipIncidentCommentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Incident"
+        ]
+      }
+    },
+    "/incident/{incident_id}/status": {
+      "patch": {
+        "summary": "change incident status",
+        "description": "change incident status",
+        "operationId": "ChangeIncidentStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "incident_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/resequipIncidentStatusRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Incident"
+        ]
+      }
+    },
+    "/incidents": {
+      "get": {
+        "summary": "list incidents",
+        "description": "list incidents",
+        "operationId": "ListIncidents",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/resequipIncidentList"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ordinal",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "assignee_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "creator_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "none_status",
+              "created",
+              "assigned",
+              "resolved",
+              "dismissed"
+            ],
+            "default": "none_status"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "none_type",
+              "maintenance",
+              "equipment"
+            ],
+            "default": "none_type"
+          },
+          {
+            "name": "deadline.lower_bound",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "deadline.upper_bound",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "created_at.lower_bound",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "created_at.upper_bound",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "Incident"
+        ]
+      }
+    },
+    "/person/{id}": {
+      "get": {
+        "summary": "get self ",
+        "description": "get self",
+        "operationId": "GetPerson",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/resequipPerson"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Person"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "resequipAssignedEquipment": {
+      "type": "object",
+      "properties": {
+        "equipment": {
+          "$ref": "#/definitions/resequipEquipment"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "person_id": {
+          "type": "string"
+        }
+      }
+    },
+    "resequipAssignedEquipmentList": {
+      "type": "object",
+      "properties": {
+        "equipment": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resequipAssignedEquipment"
+          }
+        }
+      }
+    },
+    "resequipAssignmentRequest": {
+      "type": "object",
+      "properties": {
+        "incident_id": {
+          "type": "string"
+        },
+        "person_id": {
+          "type": "string"
+        }
+      }
+    },
+    "resequipChatHistory": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resequipMessage"
+          }
+        }
+      }
+    },
+    "resequipChatToken": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "resequipEquipment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "price": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "resequipEquipmentIncident": {
+      "type": "object",
+      "properties": {
+        "equipment": {
+          "$ref": "#/definitions/resequipEquipment"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "resequipEquipmentIncidentCreate": {
+      "type": "object",
+      "properties": {
+        "incident": {
+          "$ref": "#/definitions/resequipMaintenanceIncidentCreate"
+        },
+        "equipment_id": {
+          "type": "string"
+        },
+        "duration": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "resequipEquipmentList": {
+      "type": "object",
+      "properties": {
+        "equipment": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resequipEquipment"
+          }
+        }
+      }
+    },
+    "resequipIncident": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "ordinal": {
+          "type": "string",
+          "format": "int64"
+        },
+        "description": {
+          "type": "string"
+        },
+        "priority": {
+          "$ref": "#/definitions/resequipIncidentPriority"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/resequipIncidentStatus"
+        },
+        "type": {
+          "$ref": "#/definitions/resequipIncidentType"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "resolved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "assignee": {
+          "$ref": "#/definitions/resequipPerson"
+        },
+        "creator": {
+          "$ref": "#/definitions/resequipPerson"
+        },
+        "equipment_incident": {
+          "$ref": "#/definitions/resequipEquipmentIncident"
+        }
+      }
+    },
+    "resequipIncidentCommentRequest": {
+      "type": "object",
+      "properties": {
+        "incident_id": {
+          "type": "string"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "resequipIncidentList": {
+      "type": "object",
+      "properties": {
+        "incidents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resequipIncident"
+          }
+        }
+      }
+    },
+    "resequipIncidentPriority": {
+      "type": "string",
+      "enum": [
+        "none_priority",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "none_priority"
+    },
+    "resequipIncidentStatus": {
+      "type": "string",
+      "enum": [
+        "none_status",
+        "created",
+        "assigned",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "none_status"
+    },
+    "resequipIncidentStatusRequest": {
+      "type": "object",
+      "properties": {
+        "incident_id": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/resequipIncidentStatus"
+        }
+      }
+    },
+    "resequipIncidentType": {
+      "type": "string",
+      "enum": [
+        "none_type",
+        "maintenance",
+        "equipment"
+      ],
+      "default": "none_type"
+    },
+    "resequipMaintenanceIncidentCreate": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "priority": {
+          "$ref": "#/definitions/resequipIncidentPriority"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "resequipMessage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "uid": {
+          "type": "string"
+        },
+        "login": {
+          "type": "string"
+        },
+        "full_name": {
+          "type": "string"
+        },
+        "time": {
+          "type": "string",
+          "format": "int64"
+        },
+        "message": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        }
+      }
+    },
+    "resequipPerson": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "login": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "full_name": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/resequipRole"
+        },
+        "manager_id": {
+          "type": "string"
+        }
+      }
+    },
+    "resequipRole": {
+      "type": "string",
+      "enum": [
+        "none_role",
+        "employee",
+        "team_leader",
+        "support"
+      ],
+      "default": "none_role"
+    },
+    "resequipTimestampSelector": {
+      "type": "object",
+      "properties": {
+        "lower_bound": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "upper_bound": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
