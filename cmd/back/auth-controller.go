@@ -123,7 +123,9 @@ func (is *IncidentService) Register(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Authorization", token)
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(token))
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"token": token,
+	})
 }
 
 func (is *IncidentService) Login(w http.ResponseWriter, r *http.Request) {
@@ -160,5 +162,7 @@ func (is *IncidentService) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Authorization", token)
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte(token))
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"token": token,
+	})
 }
