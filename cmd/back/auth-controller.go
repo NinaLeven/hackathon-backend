@@ -89,6 +89,7 @@ func (is *IncidentService) Register(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	user := &model.Person{
+		ID: model.GenStringUUID(),
 		FullName: full_name,
 		Login:    login,
 		Password: password,
