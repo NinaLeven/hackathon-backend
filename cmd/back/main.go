@@ -177,6 +177,10 @@ func main() {
 
 	router.Post(path.Join(config.Server.BasePath, "login"), ps.Login)
 	router.Post(path.Join(config.Server.BasePath, "register"), ps.Register)
+	router.Get("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusTeapot)
+		_, _ = w.Write([]byte("pong"))
+	}))
 
 	router.Mount(config.Server.BasePath, http.StripPrefix(config.Server.BasePath, gw))
 

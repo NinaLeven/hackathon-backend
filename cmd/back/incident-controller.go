@@ -2,13 +2,15 @@ package main
 
 import (
 	"context"
-	"github.com/WantsToFress/hackathon-backend/internal/model"
-	resequip "github.com/WantsToFress/hackathon-backend/pkg"
+	"time"
+
 	"github.com/go-pg/pg/v9"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"time"
+
+	"github.com/WantsToFress/hackathon-backend/internal/model"
+	resequip "github.com/WantsToFress/hackathon-backend/pkg"
 )
 
 func (is *IncidentService) getNextAssignee(ctx context.Context, tx *pg.Tx) (string, error) {
@@ -41,7 +43,7 @@ func (is *IncidentService) createIncident(ctx context.Context, tx *pg.Tx, r *res
 		CreatedAt:   time.Now(),
 		Deadline:    timestampToTime(r.GetDeadline()),
 		CreatorID:   creatorId,
-		Status:      resequip.IncidentStatus_created.String(),
+		Status:      resequip.IncidentStatus_assigned.String(),
 		Comment:     stringWrapperToPtr(r.GetComment()),
 		Type:        incidentType.String(),
 		Priority:    int(r.GetPriority()),
@@ -369,17 +371,229 @@ func (is *IncidentService) ListIncidents(ctx context.Context, r *resequip.Incide
 }
 
 func (is *IncidentService) AssignIncident(ctx context.Context, r *resequip.AssignmentRequest) (*empty.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+	log := loggerFromContext(ctx)
+
+	user, err := userFromContext(ctx)
+	if err != nil {
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	}
+
+	if user.Role != resequip.Role_team_leader {
+		return nil, status.Error(codes.PermissionDenied, "only team leader is allowed")
+	}
+
+	_, err = is.db.ModelContext(ctx, (*model.Incident)(nil)).
+		Set(model.Columns.Incident.AssigneeID+" = ?",
+			is.db.ModelContext(ctx, (*model.Support)(nil)).
+				ColumnExpr(model.Columns.Support.ID).
+				Where(model.Columns.Support.PersonID+" = ?", r.GetPersonId()),
+		).
+		Set(model.Columns.Incident.Status + " = ?", resequip.IncidentStatus_assigned.String()).
+		Where(model.Columns.Incident.ID + " = ?", r.GetIncidentId()).
+		Update()
+	if err != nil {
+		log.WithError(err).Error("unable to set assignee")
+		return nil, status.Error(codes.Internal, "unable to set assignee")
+	}
+
+	return &empty.Empty{}, nil
+}
+
+func (is *IncidentService) incidentCouldBeResolved(ctx context.Context, tx *pg.Tx, incident *model.Incident) (bool, error) {
+	if incident.Type != resequip.IncidentType_equipment.String() {
+		return true, nil
+	}
+
+	ei := &model.EquipmentIncident{}
+
+	requiresApproval := false
+	err := tx.ModelContext(ctx, ei).
+		Where(model.Columns.EquipmentIncident.IncidentID + " = ?", incident.ID).
+		Select(&requiresApproval)
+	if err != nil {
+		return false, err
+	}
+
+	return !ei.NeedApproval || ei.NeedApproval && ei.Approved, nil
 }
 
 func (is *IncidentService) ChangeIncidentStatus(ctx context.Context, r *resequip.IncidentStatusRequest) (*empty.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+	log := loggerFromContext(ctx)
+
+	user, err := userFromContext(ctx)
+	if err != nil {
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	}
+
+	if user.Role != resequip.Role_team_leader && user.Role != resequip.Role_support {
+		return nil, status.Error(codes.PermissionDenied, "only support team allowed")
+	}
+
+	tx, err := is.db.Begin()
+	if err != nil {
+		log.WithError(err).Error("unable to begin transaction")
+		return nil, status.Error(codes.Internal, "unable to begin transaction")
+	}
+
+	incident := &model.Incident{}
+	err = tx.ModelContext(ctx, incident).
+		Where(model.Columns.Incident.ID+" = ?", r.GetIncidentId()).
+		For("update").
+		Select()
+	if err != nil {
+		log.WithError(err).Error("unable to select incident")
+		terr := tx.Rollback()
+		if terr != nil {
+			log.WithError(terr).Error("unable to rollback transaction")
+		}
+		return nil, status.Error(codes.Internal, "unable to select incident")
+	}
+
+	switch resequip.IncidentStatus(resequip.IncidentStatus_value[incident.Status]) {
+	case resequip.IncidentStatus_created:
+		{
+			if r.GetStatus() != resequip.IncidentStatus_assigned {
+				terr := tx.Rollback()
+				if terr != nil {
+					log.WithError(terr).Error("unable to rollback transaction")
+				}
+				return nil, status.Error(codes.PermissionDenied, "not allowed")
+			}
+			if incident.AssigneeID == nil {
+				terr := tx.Rollback()
+				if terr != nil {
+					log.WithError(terr).Error("unable to rollback transaction")
+				}
+				return nil, status.Error(codes.PermissionDenied, "no assignee is set")
+			}
+		}
+	case resequip.IncidentStatus_assigned:
+		{
+			switch r.GetStatus() {
+			case resequip.IncidentStatus_resolved:
+				ok, err := is.incidentCouldBeResolved(ctx, tx, incident)
+				if err != nil {
+					log.WithError(err).Error("unable to determine if the incident could be resolved")
+					terr := tx.Rollback()
+					if terr != nil {
+						log.WithError(terr).Error("unable to rollback transaction")
+					}
+					return nil, status.Error(codes.Internal, "unable to determine if the incident could be resolved")
+				}
+				if !ok {
+					terr := tx.Rollback()
+					if terr != nil {
+						log.WithError(terr).Error("unable to rollback transaction")
+					}
+					return nil, status.Error(codes.PermissionDenied, "incident must be approved first")
+				}
+			case resequip.IncidentStatus_dismissed:
+				break
+			default:
+				terr := tx.Rollback()
+				if terr != nil {
+					log.WithError(terr).Error("unable to rollback transaction")
+				}
+				return nil, status.Error(codes.PermissionDenied, "not allowed")
+			}
+		}
+	default:
+		terr := tx.Rollback()
+		if terr != nil {
+			log.WithError(terr).Error("unable to rollback transaction")
+		}
+		return nil, status.Error(codes.PermissionDenied, "not allowed")
+	}
+
+	_, err = tx.ModelContext(ctx, (*model.Incident)(nil)).
+		Where(model.Columns.Incident.ID + " = ?", r.GetIncidentId()).
+		Set(model.Columns.Incident.Status + " = ?", r.GetStatus().String()).
+		Update()
+	if err != nil {
+		log.WithError(err).Error("unable to set new status")
+		terr := tx.Rollback()
+		if terr != nil {
+			log.WithError(terr).Error("unable to rollback transaction")
+		}
+		return nil, status.Error(codes.Internal, "unable to set new status")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.WithError(err).Error("unable to commit transaction")
+		return nil, status.Error(codes.Internal, "unable to commit transaction")
+	}
+
+	return &empty.Empty{}, nil
 }
 
 func (is *IncidentService) CommentOnIncident(ctx context.Context, r *resequip.IncidentCommentRequest) (*empty.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+	log := loggerFromContext(ctx)
+
+	user, err := userFromContext(ctx)
+	if err != nil {
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	}
+
+	if user.Role != resequip.Role_team_leader && user.Role != resequip.Role_support {
+		return nil, status.Error(codes.PermissionDenied, "only support team allowed")
+	}
+
+	_, err = is.db.ModelContext(ctx, (*model.Incident)(nil)).
+		Where(model.Columns.Incident.ID + " = ?", r.GetIncidentId()).
+		Set(model.Columns.Incident.Comment + " = ?", r.GetComment().GetValue()).
+		Update()
+	if err != nil {
+		log.WithError(err).Error("unable to set new comment")
+		return nil, status.Error(codes.Internal, "unable to set new comment")
+	}
+
+	return &empty.Empty{}, nil
 }
 
 func (is *IncidentService) ApproveEquipmentIncident(ctx context.Context, r *resequip.IncidentApprovalRequest) (*empty.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+	log := loggerFromContext(ctx)
+
+	user, err := userFromContext(ctx)
+	if err != nil {
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	}
+
+	incident := &model.Incident{}
+	err = is.db.ModelContext(ctx, incident).
+		Where(model.Columns.Incident.ID+" = ?", r.GetIncidentId()).
+		Select()
+	if err != nil {
+		log.WithError(err).Error("unable to select incident")
+		return nil, status.Error(codes.Internal, "unable to select incident")
+	}
+
+	if incident.Type != resequip.IncidentType_equipment.String() {
+		return nil, status.Error(codes.InvalidArgument, "invalid incident type")
+	}
+
+	isManager := false
+	err = is.db.ModelContext(ctx, (*model.Person)(nil)).
+		ColumnExpr(model.Columns.Person.ManagerID + " = ? as is_manager", user.GetId()).
+		Where(model.Columns.Person.ID + " = ?", incident.CreatorID).
+		Select(&isManager)
+	if err != nil {
+		log.WithError(err).Error("unable to determine persons manager")
+		return nil, status.Error(codes.Internal, "unable to determine persons manager")
+	}
+
+	if !isManager {
+		return nil, status.Error(codes.PermissionDenied, "not allowed")
+	}
+
+	_, err = is.db.ModelContext(ctx, (*model.EquipmentIncident)(nil)).
+		Set(model.Columns.EquipmentIncident.Approved + " = true").
+		Where(model.Columns.EquipmentIncident.IncidentID + " = ?", r.GetIncidentId()).
+		Update()
+	if err != nil {
+		log.WithError(err).Error("unable to approve incident")
+		return nil, status.Error(codes.Internal, "unable to approve incident")
+	}
+
+	return &empty.Empty{}, nil
 }

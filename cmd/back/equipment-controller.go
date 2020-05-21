@@ -2,34 +2,88 @@ package main
 
 import (
 	"context"
-	"github.com/WantsToFress/hackathon-backend/internal/model"
-	resequip "github.com/WantsToFress/hackathon-backend/pkg"
+
 	"github.com/go-pg/pg/v9"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/WantsToFress/hackathon-backend/internal/model"
+	resequip "github.com/WantsToFress/hackathon-backend/pkg"
 )
 
+func modelToEquipment(equipment *model.Equipment) *resequip.Equipment {
+	res := &resequip.Equipment{
+		Id:          equipment.ID,
+		Name:        equipment.Name,
+		Description: equipment.Description,
+		Price:       int64(equipment.Price),
+	}
+	return res
+}
+
 func (is *IncidentService) ListEquipment(ctx context.Context, r *resequip.EquipmentFilter) (*resequip.EquipmentList, error) {
-	return &resequip.EquipmentList{
-		Equipment: []*resequip.Equipment{
-			{
-				Id:          "3baf4d2b-0ed6-4ce8-af72-498cb1d3f5c8",
-				Name:        "name",
-				Description: "desctiption",
-				Price:       1000000,
-			},
-			{
-				Id:          "b86a1864-90f0-45b7-b1c4-60a14ed518f7",
-				Name:        "110 montauk",
-				Description: "*REDACTED*",
-				Price:       1000000,
-			},
-		},
-	}, nil
+	log := loggerFromContext(ctx)
+
+	equipment := []*model.Equipment{}
+
+	query := is.db.ModelContext(ctx, &equipment)
+
+	if r.GetSearch() != nil {
+		query.Where(model.Columns.Equipment.Name + " ilike concat('%', ?::text, '%')", r.GetSearch().GetValue())
+	}
+
+	err := query.Select()
+	if err != nil {
+		log.WithError(err).Error("unable to select equipment")
+		return nil, status.Error(codes.Internal, "unable to select equipment")
+	}
+
+	res := make([]*resequip.Equipment, 0, len(equipment))
+
+	for i := range equipment {
+		res = append(res, modelToEquipment(equipment[i]))
+	}
+
+	return &resequip.EquipmentList{Equipment: res}, nil
+}
+
+func modelToAssignedEquipment(equipment *model.EquipmentAssignment) *resequip.AssignedEquipment {
+	res := &resequip.AssignedEquipment{
+		CreatedAt:            timeToTimestamp(equipment.CreatedAt),
+		Deadline:             timeToTimestamp(equipment.Deadline),
+		PersonId:             equipment.PersonID,
+	}
+	if equipment.Equipment != nil {
+		res.Equipment = modelToEquipment(equipment.Equipment)
+	}
+	return res
 }
 
 func (is *IncidentService) ListEquipmentForPerson(ctx context.Context, r *resequip.EquipmentFilter) (*resequip.AssignedEquipmentList, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+	log := loggerFromContext(ctx)
+
+	equipment := []*model.EquipmentAssignment{}
+
+	query := is.db.ModelContext(ctx, &equipment).
+		Relation(model.Columns.EquipmentAssignment.Equipment)
+
+	if r.GetSearch() != nil {
+		query.Where(model.Columns.Equipment.Name + " ilike concat('%', ?::text, '%')", r.GetSearch().GetValue())
+	}
+
+	err := query.Select()
+	if err != nil {
+		log.WithError(err).Error("unable to select equipment")
+		return nil, status.Error(codes.Internal, "unable to select equipment")
+	}
+
+	res := make([]*resequip.AssignedEquipment, 0, len(equipment))
+
+	for i := range equipment {
+		res = append(res, modelToAssignedEquipment(equipment[i]))
+	}
+
+	return &resequip.AssignedEquipmentList{Equipment: res}, nil
 }
 
 const (
