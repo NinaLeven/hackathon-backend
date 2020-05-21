@@ -171,7 +171,6 @@ func main() {
 	router.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			r = r.WithContext(contextWithLogger(r.Context(), log))
-			log.WithField("request", r).Info()
 			next.ServeHTTP(w, r)
 		})
 	})
