@@ -85,14 +85,16 @@ func (is *IncidentService) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	login := r.FormValue("login")
+	email := r.FormValue("email")
 	full_name := r.FormValue("full_name")
 	password := r.FormValue("password")
 
 	user := &model.Person{
-		ID: model.GenStringUUID(),
+		ID:       model.GenStringUUID(),
 		FullName: full_name,
 		Login:    login,
 		Password: password,
+		Email:    email,
 		Role:     resequip.Role_employee.String(),
 	}
 
