@@ -105,7 +105,7 @@ service IncidentService {
             tags: "Equipment"
         };
     }
-    rpc ListEquipmentForPerson (EquipmentFilter) returns (AssignedEquipmentList) {
+    rpc ListEquipmentForPerson (AssignedEquipmentFilter) returns (AssignedEquipmentList) {
         option (google.api.http) = {
             get: "/equipment/person"
         };
@@ -329,6 +329,11 @@ message AssignedEquipmentList {
 }
 
 message EquipmentFilter {
+    google.protobuf.StringValue search = 2;
+}
+
+message AssignedEquipmentFilter {
+    google.protobuf.StringValue person_id = 1;
     google.protobuf.StringValue search = 2;
 }
 

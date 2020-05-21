@@ -65,13 +65,14 @@ func modelToAssignedEquipment(equipment *model.EquipmentAssignment) *resequip.As
 	return res
 }
 
-func (is *IncidentService) ListEquipmentForPerson(ctx context.Context, r *resequip.EquipmentFilter) (*resequip.AssignedEquipmentList, error) {
+func (is *IncidentService) ListEquipmentForPerson(ctx context.Context, r *resequip.AssignedEquipmentFilter) (*resequip.AssignedEquipmentList, error) {
 	log := loggerFromContext(ctx)
 
 	equipment := []*model.EquipmentAssignment{}
 
 	query := is.db.ModelContext(ctx, &equipment).
-		Relation(model.Columns.EquipmentAssignment.Equipment)
+		Relation(model.Columns.EquipmentAssignment.Equipment).
+		Where(model.Columns.EquipmentAssignment.PersonID+" = ?", r.GetPersonId().GetValue())
 
 	if r.GetSearch() != nil {
 		query.Where(model.Columns.Equipment.Name+" ilike concat('%', ?::text, '%')", r.GetSearch().GetValue())

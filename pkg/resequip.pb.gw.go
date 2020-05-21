@@ -415,7 +415,7 @@ var (
 )
 
 func request_IncidentService_ListEquipmentForPerson_0(ctx context.Context, marshaler runtime.Marshaler, client IncidentServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq EquipmentFilter
+	var protoReq AssignedEquipmentFilter
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -431,7 +431,7 @@ func request_IncidentService_ListEquipmentForPerson_0(ctx context.Context, marsh
 }
 
 func local_request_IncidentService_ListEquipmentForPerson_0(ctx context.Context, marshaler runtime.Marshaler, server IncidentServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq EquipmentFilter
+	var protoReq AssignedEquipmentFilter
 	var metadata runtime.ServerMetadata
 
 	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_IncidentService_ListEquipmentForPerson_0); err != nil {

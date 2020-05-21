@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/WantsToFress/hackathon-backend/internal/model"
 	resequip "github.com/WantsToFress/hackathon-backend/pkg"
 	"net/http"
@@ -84,28 +85,37 @@ func (is *IncidentService) newToken(login string) (string, error) {
 func (is *IncidentService) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	login := r.FormValue("login")
-	email := r.FormValue("email")
-	full_name := r.FormValue("full_name")
-	password := r.FormValue("password")
+	type registerRequest struct {
+		Login    string `json:"login"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+		FullName string `json:"full_name"`
+	}
+	req := &registerRequest{}
+
+	err := json.NewDecoder(r.Body).Decode(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	user := &model.Person{
 		ID:       model.GenStringUUID(),
-		FullName: full_name,
-		Login:    login,
-		Password: password,
-		Email:    email,
+		FullName: req.FullName,
+		Login:    req.Login,
+		Password: req.Password,
+		Email:    req.Email,
 		Role:     resequip.Role_employee.String(),
 	}
 
-	_, err := is.db.ModelContext(ctx, user).
+	_, err = is.db.ModelContext(ctx, user).
 		Insert()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	token, err := is.newToken(login)
+	token, err := is.newToken(req.Login)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -119,12 +129,21 @@ func (is *IncidentService) Register(w http.ResponseWriter, r *http.Request) {
 func (is *IncidentService) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	login := r.FormValue("login")
-	password := r.FormValue("password")
+	type loginRequest struct {
+		Login    string `json:"login"`
+		Password string `json:"password"`
+	}
+	req := &loginRequest{}
 
-	err := is.db.ModelContext(ctx, &model.Person{}).
-		Where(model.Columns.Person.Login+" = ?", login).
-		Where(model.Columns.Person.Password+" = ?", password).
+	err := json.NewDecoder(r.Body).Decode(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = is.db.ModelContext(ctx, &model.Person{}).
+		Where(model.Columns.Person.Login+" = ?", req.Login).
+		Where(model.Columns.Person.Password+" = ?", req.Password).
 		First()
 	if err != nil {
 		if err == pg.ErrNoRows {
@@ -133,7 +152,7 @@ func (is *IncidentService) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	token, err := is.newToken(login)
+	token, err := is.newToken(req.Login)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

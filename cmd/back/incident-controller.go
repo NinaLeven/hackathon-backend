@@ -37,7 +37,7 @@ func (is *IncidentService) createIncident(ctx context.Context, tx *pg.Tx, r *res
 		return "", status.Error(codes.InvalidArgument, "deadline is mandatory")
 	}
 
-	incident := model.Incident{
+	incident := &model.Incident{
 		ID:          model.GenStringUUID(),
 		Description: r.GetDescription().GetValue(),
 		CreatedAt:   time.Now(),
@@ -140,7 +140,7 @@ func (is *IncidentService) CreateEquipmentIncident(ctx context.Context, r *reseq
 		return nil, status.Error(codes.Internal, "unable to determine equipment approval")
 	}
 
-	equipInc := model.EquipmentIncident{
+	equipInc := &model.EquipmentIncident{
 		ID:           model.GenStringUUID(),
 		EquipmentID:  r.GetEquipmentId(),
 		IncidentID:   incidentId,
@@ -190,11 +190,11 @@ type incidentWithEquipment struct {
 	EquipmentPrice       *int    `sql:"equipment_price"`
 
 	AssigneeID       *string `sql:"assignee_id,type:uuid"`
-	AssigneeLogin    *string `sql:"assignee_id,type:uuid"`
+	AssigneeLogin    *string `sql:"assignee_login,type:uuid"`
 	AssigneeFullName *string `sql:"assignee_full_name,type:uuid"`
 
 	CreatorID       *string `sql:"creator_id,type:uuid"`
-	CreatorLogin    *string `sql:"creator_id,type:uuid"`
+	CreatorLogin    *string `sql:"creator_login,type:uuid"`
 	CreatorFullName *string `sql:"creator_full_name,type:uuid"`
 }
 
@@ -383,7 +383,7 @@ func (is *IncidentService) AssignIncident(ctx context.Context, r *resequip.Assig
 	}
 
 	_, err = is.db.ModelContext(ctx, (*model.Incident)(nil)).
-		Set(model.Columns.Incident.AssigneeID+" = ?",
+		Set(model.Columns.Incident.AssigneeID+" = (?)",
 			is.db.ModelContext(ctx, (*model.Support)(nil)).
 				ColumnExpr(model.Columns.Support.ID).
 				Where(model.Columns.Support.PersonID+" = ?", r.GetPersonId()),
@@ -406,10 +406,9 @@ func (is *IncidentService) incidentCouldBeResolved(ctx context.Context, tx *pg.T
 
 	ei := &model.EquipmentIncident{}
 
-	requiresApproval := false
 	err := tx.ModelContext(ctx, ei).
 		Where(model.Columns.EquipmentIncident.IncidentID+" = ?", incident.ID).
-		Select(&requiresApproval)
+		Select()
 	if err != nil {
 		return false, err
 	}
