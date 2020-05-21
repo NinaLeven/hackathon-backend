@@ -73,6 +73,17 @@ service IncidentService {
         };
     }
 
+    rpc CreateEquipment (EquipmentCreate) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/equipment"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_swagger.options.openapiv2_operation) = {
+            description: "Create event"
+            summary: "create new event"
+            tags: "Equipment"
+        };
+    }
     rpc CreateEquipmentIncident (EquipmentIncidentCreate) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/incident/equipment"
@@ -287,6 +298,12 @@ message IncidentFilter {
     IncidentType type = 6;
     TimestampSelector deadline = 7;
     TimestampSelector created_at = 8;
+}
+
+message EquipmentCreate {
+    google.protobuf.StringValue name = 2;
+    google.protobuf.StringValue description = 3;
+    google.protobuf.Int64Value price = 4;
 }
 
 message Equipment {

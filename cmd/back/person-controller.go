@@ -11,12 +11,12 @@ import (
 
 func modelToPerson(person *model.Person) *resequip.Person {
 	res := &resequip.Person{
-		Id:                   person.ID,
-		Login:                person.Login,
-		Email:                person.Email,
-		FullName:             person.FullName,
-		Role:                 resequip.Role(resequip.Role_value[person.Role]),
-		ManagerId:            ptrToStringWrapper(person.ManagerID).GetValue(),
+		Id:        person.ID,
+		Login:     person.Login,
+		Email:     person.Email,
+		FullName:  person.FullName,
+		Role:      resequip.Role(resequip.Role_value[person.Role]),
+		ManagerId: ptrToStringWrapper(person.ManagerID).GetValue(),
 	}
 	return res
 }
@@ -27,7 +27,7 @@ func (is *IncidentService) getPersonByLogin(ctx context.Context, login string) (
 	person := &model.Person{}
 
 	err := is.db.ModelContext(ctx, person).
-		Where(model.Columns.Person.Login + " = ?", login).
+		Where(model.Columns.Person.Login+" = ?", login).
 		Select()
 	if err != nil {
 		log.WithError(err).Error("unable to select person")
@@ -43,7 +43,7 @@ func (is *IncidentService) GetPerson(ctx context.Context, r *resequip.Id) (*rese
 	person := &model.Person{}
 
 	err := is.db.ModelContext(ctx, person).
-		Where(model.Columns.Person.ID + " = ?", r.GetId()).
+		Where(model.Columns.Person.ID+" = ?", r.GetId()).
 		Select()
 	if err != nil {
 		log.WithError(err).Error("unable to select person")

@@ -92,6 +92,32 @@
         "tags": [
           "Equipment"
         ]
+      },
+      "post": {
+        "summary": "create new event",
+        "description": "Create event",
+        "operationId": "CreateEquipment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/resequipEquipmentCreate"
+            }
+          }
+        ],
+        "tags": [
+          "Equipment"
+        ]
       }
     },
     "/equipment/person": {
@@ -515,6 +541,21 @@
         "id": {
           "type": "string"
         },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "price": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "resequipEquipmentCreate": {
+      "type": "object",
+      "properties": {
         "name": {
           "type": "string"
         },

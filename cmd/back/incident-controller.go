@@ -275,41 +275,41 @@ func (is *IncidentService) ListIncidents(ctx context.Context, r *resequip.Incide
 	incidents := []*incidentWithEquipment{}
 
 	query := is.db.ModelContext(ctx, (*model.Incident)(nil)).
-		ColumnExpr("t." + model.Columns.Incident.ID + " as id").
-		ColumnExpr("t." + model.Columns.Incident.Ordinal + " as ordinal").
-		ColumnExpr("t." + model.Columns.Incident.Description + " as description").
-		ColumnExpr("t." + model.Columns.Incident.CreatedAt + " as created_at").
-		ColumnExpr("t." + model.Columns.Incident.ResolvedAt + " as resolved_at").
-		ColumnExpr("t." + model.Columns.Incident.Deadline + " as deadline").
-		ColumnExpr("t." + model.Columns.Incident.Status + " as status").
-		ColumnExpr("t." + model.Columns.Incident.Comment + " as comment").
-		ColumnExpr("t." + model.Columns.Incident.Type + " as type").
-		ColumnExpr("t." + model.Columns.Incident.Priority + " as priority").
-		ColumnExpr("ei." + model.Columns.EquipmentIncident.ID + " as equipment_incident_id").
-		ColumnExpr("ei." + model.Columns.EquipmentIncident.Deadline + " as equipment_deadline").
-		ColumnExpr("ei." + model.Columns.EquipmentIncident.NeedApproval + " as need_approval").
-		ColumnExpr("ei." + model.Columns.EquipmentIncident.Approved + " as approved").
-		ColumnExpr("e." + model.Columns.Equipment.ID + " as equipment_id").
-		ColumnExpr("e." + model.Columns.Equipment.Name + " as equipment_name").
-		ColumnExpr("e." + model.Columns.Equipment.Description + " as equipment_description").
-		ColumnExpr("e." + model.Columns.Equipment.Price + " as equipment_price").
-		ColumnExpr("ass." + model.Columns.Person.ID + " as assignee_id").
-		ColumnExpr("ass." + model.Columns.Person.Login + " as assignee_login").
-		ColumnExpr("ass." + model.Columns.Person.FullName + " as assignee_full_name").
-		ColumnExpr("cr." + model.Columns.Person.ID + " as creator_id").
-		ColumnExpr("cr." + model.Columns.Person.Login + " as creator_login").
-		ColumnExpr("cr." + model.Columns.Person.FullName + " as creator_full_name").
-		Join("left join " + model.Tables.EquipmentIncident.Name + " as ei").
-		JoinOn("t." + model.Columns.Incident.ID + " = " + "ei." + model.Columns.EquipmentIncident.IncidentID).
-		Join("left join " + model.Tables.Equipment.Name + " as e").
-		JoinOn("ei." + model.Columns.EquipmentIncident.EquipmentID + " = " + "e." + model.Columns.Equipment.ID).
-		Join("inner join " + model.Tables.Person.Name + " as cr").
-		JoinOn("t." + model.Columns.Incident.CreatorID + " = " + "cr." + model.Columns.Person.ID).
-		Join("left join " + model.Tables.Support.Name + " as s").
-		JoinOn("t." + model.Columns.Incident.AssigneeID + " = " + "s." + model.Columns.Support.ID).
-		Join("left join " + model.Tables.Person.Name + " as ass").
-		JoinOn("s." + model.Columns.Support.PersonID + " = " + "ass." + model.Columns.Person.ID).
-		Order("t." + model.Columns.Incident.Priority + ", " + "t." + model.Columns.Incident.Deadline + " asc")
+		ColumnExpr("t."+model.Columns.Incident.ID+" as id").
+		ColumnExpr("t."+model.Columns.Incident.Ordinal+" as ordinal").
+		ColumnExpr("t."+model.Columns.Incident.Description+" as description").
+		ColumnExpr("t."+model.Columns.Incident.CreatedAt+" as created_at").
+		ColumnExpr("t."+model.Columns.Incident.ResolvedAt+" as resolved_at").
+		ColumnExpr("t."+model.Columns.Incident.Deadline+" as deadline").
+		ColumnExpr("t."+model.Columns.Incident.Status+" as status").
+		ColumnExpr("t."+model.Columns.Incident.Comment+" as comment").
+		ColumnExpr("t."+model.Columns.Incident.Type+" as type").
+		ColumnExpr("t."+model.Columns.Incident.Priority+" as priority").
+		ColumnExpr("ei."+model.Columns.EquipmentIncident.ID+" as equipment_incident_id").
+		ColumnExpr("ei."+model.Columns.EquipmentIncident.Deadline+" as equipment_deadline").
+		ColumnExpr("ei."+model.Columns.EquipmentIncident.NeedApproval+" as need_approval").
+		ColumnExpr("ei."+model.Columns.EquipmentIncident.Approved+" as approved").
+		ColumnExpr("e."+model.Columns.Equipment.ID+" as equipment_id").
+		ColumnExpr("e."+model.Columns.Equipment.Name+" as equipment_name").
+		ColumnExpr("e."+model.Columns.Equipment.Description+" as equipment_description").
+		ColumnExpr("e."+model.Columns.Equipment.Price+" as equipment_price").
+		ColumnExpr("ass."+model.Columns.Person.ID+" as assignee_id").
+		ColumnExpr("ass."+model.Columns.Person.Login+" as assignee_login").
+		ColumnExpr("ass."+model.Columns.Person.FullName+" as assignee_full_name").
+		ColumnExpr("cr."+model.Columns.Person.ID+" as creator_id").
+		ColumnExpr("cr."+model.Columns.Person.Login+" as creator_login").
+		ColumnExpr("cr."+model.Columns.Person.FullName+" as creator_full_name").
+		Join("left join "+model.Tables.EquipmentIncident.Name+" as ei").
+		JoinOn("t."+model.Columns.Incident.ID+" = "+"ei."+model.Columns.EquipmentIncident.IncidentID).
+		Join("left join "+model.Tables.Equipment.Name+" as e").
+		JoinOn("ei."+model.Columns.EquipmentIncident.EquipmentID+" = "+"e."+model.Columns.Equipment.ID).
+		Join("inner join "+model.Tables.Person.Name+" as cr").
+		JoinOn("t."+model.Columns.Incident.CreatorID+" = "+"cr."+model.Columns.Person.ID).
+		Join("left join "+model.Tables.Support.Name+" as s").
+		JoinOn("t."+model.Columns.Incident.AssigneeID+" = "+"s."+model.Columns.Support.ID).
+		Join("left join "+model.Tables.Person.Name+" as ass").
+		JoinOn("s."+model.Columns.Support.PersonID+" = "+"ass."+model.Columns.Person.ID).
+		Order("t."+model.Columns.Incident.Priority+" asc", "t."+model.Columns.Incident.Deadline+" asc")
 
 	if r.GetSearch() != nil {
 		query.Where("t."+model.Columns.Incident.Description+" ilike concat('%', ?::text, '%')", r.GetSearch().GetValue())
@@ -388,8 +388,8 @@ func (is *IncidentService) AssignIncident(ctx context.Context, r *resequip.Assig
 				ColumnExpr(model.Columns.Support.ID).
 				Where(model.Columns.Support.PersonID+" = ?", r.GetPersonId()),
 		).
-		Set(model.Columns.Incident.Status + " = ?", resequip.IncidentStatus_assigned.String()).
-		Where(model.Columns.Incident.ID + " = ?", r.GetIncidentId()).
+		Set(model.Columns.Incident.Status+" = ?", resequip.IncidentStatus_assigned.String()).
+		Where(model.Columns.Incident.ID+" = ?", r.GetIncidentId()).
 		Update()
 	if err != nil {
 		log.WithError(err).Error("unable to set assignee")
@@ -408,7 +408,7 @@ func (is *IncidentService) incidentCouldBeResolved(ctx context.Context, tx *pg.T
 
 	requiresApproval := false
 	err := tx.ModelContext(ctx, ei).
-		Where(model.Columns.EquipmentIncident.IncidentID + " = ?", incident.ID).
+		Where(model.Columns.EquipmentIncident.IncidentID+" = ?", incident.ID).
 		Select(&requiresApproval)
 	if err != nil {
 		return false, err
@@ -487,6 +487,15 @@ func (is *IncidentService) ChangeIncidentStatus(ctx context.Context, r *resequip
 					}
 					return nil, status.Error(codes.PermissionDenied, "incident must be approved first")
 				}
+				err = is.createEquipmentAssignment(ctx, tx, incident.ID, incident.CreatorID)
+				if err != nil {
+					log.WithError(err).Error("unable to assign equipment")
+					terr := tx.Rollback()
+					if terr != nil {
+						log.WithError(terr).Error("unable to rollback transaction")
+					}
+					return nil, status.Error(codes.Internal, "unable to assign equipment")
+				}
 			case resequip.IncidentStatus_dismissed:
 				break
 			default:
@@ -506,8 +515,8 @@ func (is *IncidentService) ChangeIncidentStatus(ctx context.Context, r *resequip
 	}
 
 	_, err = tx.ModelContext(ctx, (*model.Incident)(nil)).
-		Where(model.Columns.Incident.ID + " = ?", r.GetIncidentId()).
-		Set(model.Columns.Incident.Status + " = ?", r.GetStatus().String()).
+		Where(model.Columns.Incident.ID+" = ?", r.GetIncidentId()).
+		Set(model.Columns.Incident.Status+" = ?", r.GetStatus().String()).
 		Update()
 	if err != nil {
 		log.WithError(err).Error("unable to set new status")
@@ -540,8 +549,8 @@ func (is *IncidentService) CommentOnIncident(ctx context.Context, r *resequip.In
 	}
 
 	_, err = is.db.ModelContext(ctx, (*model.Incident)(nil)).
-		Where(model.Columns.Incident.ID + " = ?", r.GetIncidentId()).
-		Set(model.Columns.Incident.Comment + " = ?", r.GetComment().GetValue()).
+		Where(model.Columns.Incident.ID+" = ?", r.GetIncidentId()).
+		Set(model.Columns.Incident.Comment+" = ?", r.GetComment().GetValue()).
 		Update()
 	if err != nil {
 		log.WithError(err).Error("unable to set new comment")
@@ -574,8 +583,8 @@ func (is *IncidentService) ApproveEquipmentIncident(ctx context.Context, r *rese
 
 	isManager := false
 	err = is.db.ModelContext(ctx, (*model.Person)(nil)).
-		ColumnExpr(model.Columns.Person.ManagerID + " = ? as is_manager", user.GetId()).
-		Where(model.Columns.Person.ID + " = ?", incident.CreatorID).
+		ColumnExpr(model.Columns.Person.ManagerID+" = ? as is_manager", user.GetId()).
+		Where(model.Columns.Person.ID+" = ?", incident.CreatorID).
 		Select(&isManager)
 	if err != nil {
 		log.WithError(err).Error("unable to determine persons manager")
@@ -587,8 +596,8 @@ func (is *IncidentService) ApproveEquipmentIncident(ctx context.Context, r *rese
 	}
 
 	_, err = is.db.ModelContext(ctx, (*model.EquipmentIncident)(nil)).
-		Set(model.Columns.EquipmentIncident.Approved + " = true").
-		Where(model.Columns.EquipmentIncident.IncidentID + " = ?", r.GetIncidentId()).
+		Set(model.Columns.EquipmentIncident.Approved+" = true").
+		Where(model.Columns.EquipmentIncident.IncidentID+" = ?", r.GetIncidentId()).
 		Update()
 	if err != nil {
 		log.WithError(err).Error("unable to approve incident")
