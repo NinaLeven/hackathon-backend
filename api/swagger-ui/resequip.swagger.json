@@ -536,6 +536,14 @@
         "deadline": {
           "type": "string",
           "format": "date-time"
+        },
+        "requires_approval": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "approved": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -548,9 +556,9 @@
         "equipment_id": {
           "type": "string"
         },
-        "duration": {
+        "deadline": {
           "type": "string",
-          "format": "int64"
+          "format": "date-time"
         }
       }
     },

@@ -220,6 +220,14 @@ func timestampToTime(t *timestamp.Timestamp) time.Time {
 	return res
 }
 
+func prtToTimestamp(t *time.Time) *timestamp.Timestamp {
+	if t == nil {
+		return nil
+	}
+	res, _ := ptypes.TimestampProto(*t)
+	return res
+}
+
 func difference(a, b []string) []string {
 	diff := []string{}
 	m := make(map[string]struct{})

@@ -24,7 +24,7 @@ CREATE SEQUENCE ordinal_seq;
 
 create table incident (
     id uuid not null,
-    ordinal int default nextval('ordinal_seq'),
+    ordinal int not null default nextval('ordinal_seq'),
     description text not null,
     created_at timestamp(0) not null,
     resolved_at timestamp(0),
@@ -35,7 +35,6 @@ create table incident (
     comment text,
     type varchar(256) not null default 'maintenance',
     priority int not null default 0,
-    approved bool not null default false,
     primary key (id)
 );
 
@@ -58,6 +57,8 @@ create table equipment_incident
     equipment_id uuid not null,
     incident_id  uuid not null,
     deadline     timestamp(0) not null,
+    need_approval bool not null default false,
+    approved bool not null default false,
     primary key (id)
 );
 
@@ -76,3 +77,14 @@ create table equipment_assignment(
 alter table equipment_assignment add constraint equipment_assignment_to_equipment foreign key (equipment_id) references equipment(id) on update cascade on delete cascade;
 alter table equipment_assignment add constraint equipment_assignment_to_person  foreign key (person_id) references person(id) on update cascade on delete cascade;
 
+CREATE TABLE "message"
+(
+    "id"        uuid          NOT NULL,
+    "person_id" uuid          NOT NULL,
+    "event_id"  uuid          not null,
+    "login"     uuid          not null,
+    "full_name" varchar(1024) not null,
+    "time"      timestamp     not null,
+    "message"   text          not null,
+    PRIMARY KEY ("id")
+);

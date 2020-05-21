@@ -234,7 +234,7 @@ message MaintenanceIncidentCreate {
 message EquipmentIncidentCreate {
     MaintenanceIncidentCreate incident = 1;
     string equipment_id = 2;
-    int64 duration = 3;
+    google.protobuf.Timestamp deadline = 3;
 }
 
 enum IncidentStatus {
@@ -254,6 +254,8 @@ enum IncidentType {
 message EquipmentIncident {
     Equipment equipment = 1;
     google.protobuf.Timestamp deadline = 2;
+    bool requires_approval = 3;
+    bool approved = 4;
 }
 
 message Incident {
@@ -262,7 +264,7 @@ message Incident {
     string description = 3;
     IncidentPriority priority = 4;
     google.protobuf.Timestamp deadline = 5;
-    string comment = 6;
+    google.protobuf.StringValue comment = 6;
     IncidentStatus status = 7;
     IncidentType type = 8;
     google.protobuf.Timestamp created_at = 9;

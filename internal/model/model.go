@@ -16,13 +16,17 @@ type ColumnsEquipmentAssignment struct {
 }
 
 type ColumnsEquipmentIncident struct {
-	ID, EquipmentID, IncidentID, Deadline string
-	Equipment, Incident                   string
+	ID, EquipmentID, IncidentID, Deadline, NeedApproval, Approved string
+	Equipment, Incident                                           string
 }
 
 type ColumnsIncident struct {
-	ID, Ordinal, Description, CreatedAt, ResolvedAt, Deadline, AssigneeID, CreatorID, Status, Comment, Type, Priority, Approved string
-	Assignee, Creator                                                                                                           string
+	ID, Ordinal, Description, CreatedAt, ResolvedAt, Deadline, AssigneeID, CreatorID, Status, Comment, Type, Priority string
+	Assignee, Creator                                                                                                 string
+}
+
+type ColumnsMessage struct {
+	ID, PersonID, EventID, Login, FullName, Time, Message string
 }
 
 type ColumnsPerson struct {
@@ -44,6 +48,7 @@ type ColumnsSt struct {
 	EquipmentAssignment ColumnsEquipmentAssignment
 	EquipmentIncident   ColumnsEquipmentIncident
 	Incident            ColumnsIncident
+	Message             ColumnsMessage
 	Person              ColumnsPerson
 	SchemaMigration     ColumnsSchemaMigration
 	Support             ColumnsSupport
@@ -67,10 +72,12 @@ var Columns = ColumnsSt{
 		Person:    "Person",
 	},
 	EquipmentIncident: ColumnsEquipmentIncident{
-		ID:          "id",
-		EquipmentID: "equipment_id",
-		IncidentID:  "incident_id",
-		Deadline:    "deadline",
+		ID:           "id",
+		EquipmentID:  "equipment_id",
+		IncidentID:   "incident_id",
+		Deadline:     "deadline",
+		NeedApproval: "need_approval",
+		Approved:     "approved",
 
 		Equipment: "Equipment",
 		Incident:  "Incident",
@@ -88,10 +95,18 @@ var Columns = ColumnsSt{
 		Comment:     "comment",
 		Type:        "type",
 		Priority:    "priority",
-		Approved:    "approved",
 
 		Assignee: "Assignee",
 		Creator:  "Creator",
+	},
+	Message: ColumnsMessage{
+		ID:       "id",
+		PersonID: "person_id",
+		EventID:  "event_id",
+		Login:    "login",
+		FullName: "full_name",
+		Time:     "time",
+		Message:  "message",
 	},
 	Person: ColumnsPerson{
 		ID:        "id",
@@ -133,6 +148,10 @@ type TableIncident struct {
 	Name, Alias string
 }
 
+type TableMessage struct {
+	Name, Alias string
+}
+
 type TablePerson struct {
 	Name, Alias string
 }
@@ -150,6 +169,7 @@ type TablesSt struct {
 	EquipmentAssignment TableEquipmentAssignment
 	EquipmentIncident   TableEquipmentIncident
 	Incident            TableIncident
+	Message             TableMessage
 	Person              TablePerson
 	SchemaMigration     TableSchemaMigration
 	Support             TableSupport
@@ -170,6 +190,10 @@ var Tables = TablesSt{
 	},
 	Incident: TableIncident{
 		Name:  "incident",
+		Alias: "t",
+	},
+	Message: TableMessage{
+		Name:  "message",
 		Alias: "t",
 	},
 	Person: TablePerson{
@@ -211,10 +235,12 @@ type EquipmentAssignment struct {
 type EquipmentIncident struct {
 	tableName struct{} `sql:"equipment_incident,alias:t" pg:",discard_unknown_columns"`
 
-	ID          string    `sql:"id,pk,type:uuid"`
-	EquipmentID string    `sql:"equipment_id,type:uuid,notnull"`
-	IncidentID  string    `sql:"incident_id,type:uuid,notnull"`
-	Deadline    time.Time `sql:"deadline,notnull"`
+	ID           string    `sql:"id,pk,type:uuid"`
+	EquipmentID  string    `sql:"equipment_id,type:uuid,notnull"`
+	IncidentID   string    `sql:"incident_id,type:uuid,notnull"`
+	Deadline     time.Time `sql:"deadline,notnull"`
+	NeedApproval bool      `sql:"need_approval,notnull"`
+	Approved     bool      `sql:"approved,notnull"`
 
 	Equipment *Equipment `pg:"fk:equipment_id"`
 	Incident  *Incident  `pg:"fk:incident_id"`
@@ -224,7 +250,7 @@ type Incident struct {
 	tableName struct{} `sql:"incident,alias:t" pg:",discard_unknown_columns"`
 
 	ID          string     `sql:"id,pk,type:uuid"`
-	Ordinal     *int       `sql:"ordinal"`
+	Ordinal     int        `sql:"ordinal,notnull"`
 	Description string     `sql:"description,notnull"`
 	CreatedAt   time.Time  `sql:"created_at,notnull"`
 	ResolvedAt  *time.Time `sql:"resolved_at"`
@@ -235,10 +261,21 @@ type Incident struct {
 	Comment     *string    `sql:"comment"`
 	Type        string     `sql:"type,notnull"`
 	Priority    int        `sql:"priority,notnull"`
-	Approved    bool       `sql:"approved,notnull"`
 
 	Assignee *Support `pg:"fk:assignee_id"`
 	Creator  *Person  `pg:"fk:creator_id"`
+}
+
+type Message struct {
+	tableName struct{} `sql:"message,alias:t" pg:",discard_unknown_columns"`
+
+	ID       string    `sql:"id,pk,type:uuid"`
+	PersonID string    `sql:"person_id,type:uuid,notnull"`
+	EventID  string    `sql:"event_id,type:uuid,notnull"`
+	Login    string    `sql:"login,type:uuid,notnull"`
+	FullName string    `sql:"full_name,notnull"`
+	Time     time.Time `sql:"time,notnull"`
+	Message  string    `sql:"message,notnull"`
 }
 
 type Person struct {

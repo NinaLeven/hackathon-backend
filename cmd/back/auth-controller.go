@@ -41,7 +41,7 @@ func (u *UserClaims) Valid() error {
 	return nil
 }
 
-func (es *IncidentService) AuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+func (is *IncidentService) AuthInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	meta, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "metadata not present in context")
@@ -55,7 +55,7 @@ func (es *IncidentService) AuthInterceptor(ctx context.Context, req interface{},
 	authRaw := authMeta[0]
 
 	token, err := jwt.ParseWithClaims(authRaw, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return es.publicKey, nil
+		return is.publicKey, nil
 	})
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
@@ -66,7 +66,7 @@ func (es *IncidentService) AuthInterceptor(ctx context.Context, req interface{},
 		return nil, status.Error(codes.Internal, "invalid claims type")
 	}
 
-	user, err := es.getPersonByLogin(ctx, userClaims.Login)
+	user, err := is.getPersonByLogin(ctx, userClaims.Login)
 	if err != nil {
 		return nil, err
 	}
@@ -74,14 +74,14 @@ func (es *IncidentService) AuthInterceptor(ctx context.Context, req interface{},
 	return handler(userToContext(ctx, user), req)
 }
 
-func (es *IncidentService) newToken(login string) (string, error) {
+func (is *IncidentService) newToken(login string) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodRS256, &UserClaims{
 		Login:      login,
 		Expiration: time.Now().Add(time.Hour * 24 * 3),
-	}).SignedString(es.privateKey)
+	}).SignedString(is.privateKey)
 }
 
-func (es *IncidentService) Register(w http.ResponseWriter, r *http.Request) {
+func (is *IncidentService) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	login := r.FormValue("login")
@@ -95,14 +95,14 @@ func (es *IncidentService) Register(w http.ResponseWriter, r *http.Request) {
 		Role:     resequip.Role_employee.String(),
 	}
 
-	_, err := es.db.ModelContext(ctx, user).
+	_, err := is.db.ModelContext(ctx, user).
 		Insert()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	token, err := es.newToken(login)
+	token, err := is.newToken(login)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -113,13 +113,13 @@ func (es *IncidentService) Register(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(token))
 }
 
-func (es *IncidentService) Login(w http.ResponseWriter, r *http.Request) {
+func (is *IncidentService) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	login := r.FormValue("login")
 	password := r.FormValue("password")
 
-	err := es.db.ModelContext(ctx, &model.Person{}).
+	err := is.db.ModelContext(ctx, &model.Person{}).
 		Where(model.Columns.Person.Login+" = ?", login).
 		Where(model.Columns.Person.Password+" = ?", password).
 		First()
@@ -130,7 +130,7 @@ func (es *IncidentService) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	token, err := es.newToken(login)
+	token, err := is.newToken(login)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
