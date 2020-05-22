@@ -37,6 +37,22 @@ func (is *IncidentService) getPersonByLogin(ctx context.Context, login string) (
 	return modelToPerson(person), nil
 }
 
+func (is *IncidentService) getPersonByEmail(ctx context.Context, email string) (*resequip.Person, error) {
+	log := loggerFromContext(ctx)
+
+	person := &model.Person{}
+
+	err := is.db.ModelContext(ctx, person).
+		Where(model.Columns.Person.Email+" = ?", email).
+		Select()
+	if err != nil {
+		log.WithError(err).Error("unable to select person")
+		return nil, status.Error(codes.Internal, "unable to select person")
+	}
+
+	return modelToPerson(person), nil
+}
+
 func (is *IncidentService) GetPerson(ctx context.Context, r *resequip.Id) (*resequip.Person, error) {
 	log := loggerFromContext(ctx)
 

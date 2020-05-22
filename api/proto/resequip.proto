@@ -298,6 +298,7 @@ message IncidentFilter {
     IncidentType type = 6;
     TimestampSelector deadline = 7;
     TimestampSelector created_at = 8;
+    google.protobuf.BoolValue requires_user_approval = 9;
 }
 
 message EquipmentCreate {

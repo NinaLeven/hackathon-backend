@@ -14,6 +14,7 @@ type Config struct {
 	Migration  MigrationConfig   `yaml:"migration"`
 	Centrifuge *CentrifugeConfig `yaml:"centrifuge"`
 	Auth       AuthConfig        `yaml:"auth"`
+	MainConfig *MailConfig       `yaml:"mail"`
 }
 
 type Swagger struct {

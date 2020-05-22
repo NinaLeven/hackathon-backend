@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rsa"
+	"github.com/mailgun/mailgun-go/v4"
 	"strings"
 	"time"
 
@@ -262,4 +263,6 @@ type IncidentService struct {
 	privateKey *rsa.PrivateKey
 	publicKey  *rsa.PublicKey
 	hmacSecret []byte
+	mailConfig *MailConfig
+	mailClient mailgun.Mailgun
 }

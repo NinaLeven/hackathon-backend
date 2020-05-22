@@ -69,6 +69,8 @@ func main() {
 	}
 	defer cent.Close()
 
+	mailClient := NewMailClient(ctx, config.MainConfig)
+
 	pubkeyRaw, err := base64.StdEncoding.DecodeString(config.Auth.PublicKey)
 	if err != nil {
 		log.WithError(err).Fatal("unable to decode pubkey")
@@ -94,12 +96,16 @@ func main() {
 		hmacSecret: []byte(config.Centrifuge.HMACSecret),
 		privateKey: privkey,
 		publicKey:  pubkey,
+		mailClient: mailClient,
+		mailConfig: config.MainConfig,
 	}
 
 	err = ps.WatchChat(ctx)
 	if err != nil {
 		log.WithError(err).Fatal()
 	}
+
+	go ps.watchMail(ctx)
 
 	// grpc
 	lis, err := net.Listen("tcp", config.Server.GrpcAddress)
@@ -181,6 +187,7 @@ func main() {
 		w.WriteHeader(http.StatusTeapot)
 		_, _ = w.Write([]byte("pong"))
 	}))
+	router.Get(path.Join(config.Server.BasePath, "report"), ps.GetReport)
 
 	router.Mount(config.Server.BasePath, http.StripPrefix(config.Server.BasePath, gw))
 

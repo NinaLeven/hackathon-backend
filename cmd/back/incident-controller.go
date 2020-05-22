@@ -272,6 +272,11 @@ func modelToIncident(inc *incidentWithEquipment) *resequip.Incident {
 func (is *IncidentService) ListIncidents(ctx context.Context, r *resequip.IncidentFilter) (*resequip.IncidentList, error) {
 	log := loggerFromContext(ctx)
 
+	user, err := userFromContext(ctx)
+	if err != nil {
+		return nil, status.Error(codes.PermissionDenied, err.Error())
+	}
+
 	incidents := []*incidentWithEquipment{}
 
 	query := is.db.ModelContext(ctx, (*model.Incident)(nil)).
@@ -355,7 +360,12 @@ func (is *IncidentService) ListIncidents(ctx context.Context, r *resequip.Incide
 			Where("s."+model.Columns.Support.PersonID+" = ?", r.GetAssigneeId().GetValue())
 	}
 
-	_, err := query.SelectAndCount(&incidents)
+	if r.GetRequiresUserApproval() != nil {
+		query.Where("cr." + model.Columns.Person.ManagerID + " = ?", user.Id).
+			Where("ei." + model.Columns.EquipmentIncident.NeedApproval + " = true")
+	}
+
+	_, err = query.SelectAndCount(&incidents)
 	if err != nil {
 		log.WithError(err).Error("unable to list incidents")
 		return nil, status.Error(codes.Internal, "unable to list incidents")
