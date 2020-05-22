@@ -32,7 +32,10 @@ func (is *IncidentService) ListEquipment(ctx context.Context, r *resequip.Equipm
 
 	equipment := []*model.Equipment{}
 
-	query := is.db.ModelContext(ctx, &equipment)
+	query := is.db.ModelContext(ctx, &equipment).
+		Join("left join "+model.Tables.EquipmentAssignment.Name+" as ea").
+		JoinOn("t." +model.Columns.Equipment.ID + " = " + "ea."+model.Columns.EquipmentAssignment.EquipmentID).
+		Where("ea." + model.Columns.EquipmentAssignment.ID + " is null")
 
 	if r.GetSearch() != nil {
 		query.Where(model.Columns.Equipment.Name+" ilike concat('%', ?::text, '%')", r.GetSearch().GetValue())
