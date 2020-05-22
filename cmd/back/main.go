@@ -105,7 +105,7 @@ func main() {
 		log.WithError(err).Fatal()
 	}
 
-	go ps.watchMail(ctx)
+	//go ps.watchMail(ctx)
 
 	// grpc
 	lis, err := net.Listen("tcp", config.Server.GrpcAddress)

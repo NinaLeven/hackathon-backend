@@ -20,12 +20,14 @@ type MailConfig struct {
 }
 
 func NewMailClient(ctx context.Context, config *MailConfig) mailgun.Mailgun {
-	client := mailgun.NewMailgun(config.Domain, config.PrivateKey)
-	client.SetAPIBase(mailgun.APIBaseUS)
-	return client
+	return mailgun.NewMailgun(config.Domain, config.PrivateKey)
 }
 
 func (is *IncidentService) watchMail(ctx context.Context) {
+	if is.mailClient == nil {
+		return
+	}
+
 	log := loggerFromContext(ctx)
 
 	eventList := is.mailClient.PollEvents(&mailgun.ListEventOptions{
